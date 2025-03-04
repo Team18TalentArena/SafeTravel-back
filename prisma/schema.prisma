@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+enum IncidentType {
+  theft
+  assault
+  vandalism
+  accident
+}
+
+enum Quarter {
+  q1
+  q2
+  q3
+  q4
+}
+
+enum UserType {
+  ADMIN
+  USER
+  AUTHORITY
+}
+
+model User {
+  id                 BigInt            @id @default(autoincrement())
+  username           String            @unique
+  email              String            @unique
+  user_type          UserType          @default(USER)
+  password_hash      String
+  phone              String?
+  profile            String?
+  is_walking_pet     Boolean           @default(false)
+  is_vulnerable_group Boolean           @default(false)
+  is_verified        Boolean           @default(false)
+  has_animals        Boolean           @default(false)
+  alerts             Alert[]
+  community_reports  CommunityReport[]
+
+  @@map("users")
+}
+
+model Zone {
+  id                 BigInt            @id @default(autoincrement())
+  name               String
+  description        String?
+  location    Polygon?     @relation(fields: [polygonId], references: [id])
+  polygonId   String?      @unique
+  is_under_premises  Boolean           @default(false)
+  population_density Decimal?
+  risk_level         Int?
+  alerts             Alert[]
+  incidents          Incident[]
+  community_reports  CommunityReport[]
+
+  @@map("zones")
+}
+
+model Polygon {
+  id          String      @id @default(cuid())
+  coordinates Json // Stores array of {lat: number, lng: number} objects
+  zone        Zone?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Alert {
+  id            BigInt    @id @default(autoincrement())
+  user_id       BigInt
+  zone_id       BigInt
+  alert_time    DateTime  @default(now()) @db.Timestamptz
+  description   String?
+  is_active     Boolean   @default(true)
+  alert_quarter Quarter?
+  user          User      @relation(fields: [user_id], references: [id])
+  zone          Zone      @relation(fields: [zone_id], references: [id])
+
+  @@map("alerts")
+}
+
+model Incident {
+  id                       BigInt       @id @default(autoincrement())
+  zone_id                  BigInt
+  report_time              DateTime     @default(now()) @db.Timestamptz
+  description              String?
+  severity                 Int?
+  is_validated_by_authority Boolean      @default(false)
+  type                     IncidentType?
+  zone                     Zone         @relation(fields: [zone_id], references: [id])
+
+  @@map("incidents")
+}
+
+model CommunityReport {
+  id          BigInt   @id @default(autoincrement())
+  user_id     BigInt
+  zone_id     BigInt
+  report_time DateTime @default(now()) @db.Timestamptz
+  description String?
+  user        User     @relation(fields: [user_id], references: [id])
+  zone        Zone     @relation(fields: [zone_id], references: [id])
+
+  @@map("community_reports")
+}

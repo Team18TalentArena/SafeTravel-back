@@ -1,0 +1,208 @@
+enum IncidentType {
+  theft
+  assault
+  vandalism
+  accident
+}
+
+enum Quarter {
+  q1
+  q2
+  q3
+  q4
+}
+
+enum UserType {
+  ADMIN
+  USER
+  AUTHORITY
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  userType: UserType!
+  passwordHash: String!
+  phone: String
+  profile: String
+  isWalkingPet: Boolean!
+  isVulnerableGroup: Boolean!
+  isVerified: Boolean!
+  hasAnimals: Boolean!
+  alerts: [Alert!]
+  communityReports: [CommunityReport!]
+}
+
+type Zone {
+  id: ID!
+  name: String!
+  description: String
+  latitude: Float!
+  longitude: Float!
+  radius: Float!
+  isUnderPremises: Boolean!
+  populationDensity: Float
+  alerts: [Alert!]
+  incidents: [Incident!]
+  communityReports: [CommunityReport!]
+}
+
+type Alert {
+  id: ID!
+  userId: ID!
+  zoneId: ID!
+  alertTime: DateTime!
+  description: String
+  isActive: Boolean!
+  alertQuarter: Quarter
+  user: User!
+  zone: Zone!
+}
+
+type Incident {
+  id: ID!
+  zoneId: ID!
+  reportTime: DateTime!
+  description: String
+  severity: Int
+  isValidatedByAuthority: Boolean!
+  type: IncidentType
+  zone: Zone!
+}
+
+type CommunityReport {
+  id: ID!
+  userId: ID!
+  zoneId: ID!
+  reportTime: DateTime!
+  description: String
+  user: User!
+  zone: Zone!
+}
+
+# Scalar for DateTime
+scalar DateTime
+
+# Query type
+type Query {
+  user(id: ID!): User
+  users: [User!]!
+  zone(id: ID!): Zone
+  zones: [Zone!]!
+  alert(id: ID!): Alert
+  alerts: [Alert!]!
+  incident(id: ID!): Incident
+  incidents: [Incident!]!
+  communityReport(id: ID!): CommunityReport
+  communityReports: [CommunityReport!]!
+}
+
+# Mutation type
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+  deleteUser(id: ID!): Boolean!
+  
+  createZone(input: CreateZoneInput!): Zone!
+  updateZone(id: ID!, input: UpdateZoneInput!): Zone!
+  deleteZone(id: ID!): Boolean!
+  
+  createAlert(input: CreateAlertInput!): Alert!
+  updateAlert(id: ID!, input: UpdateAlertInput!): Alert!
+  deleteAlert(id: ID!): Boolean!
+  
+  createIncident(input: CreateIncidentInput!): Incident!
+  updateIncident(id: ID!, input: UpdateIncidentInput!): Incident!
+  deleteIncident(id: ID!): Boolean!
+  
+  createCommunityReport(input: CreateCommunityReportInput!): CommunityReport!
+  updateCommunityReport(id: ID!, input: UpdateCommunityReportInput!): CommunityReport!
+  deleteCommunityReport(id: ID!): Boolean!
+}
+
+# Input types for mutations
+input CreateUserInput {
+  username: String!
+  email: String!
+  userType: UserType
+  passwordHash: String!
+  phone: String
+  profile: String
+  isWalkingPet: Boolean
+  isVulnerableGroup: Boolean
+  isVerified: Boolean
+  hasAnimals: Boolean
+}
+
+input UpdateUserInput {
+  username: String
+  email: String
+  userType: UserType
+  passwordHash: String
+  phone: String
+  profile: String
+  isWalkingPet: Boolean
+  isVulnerableGroup: Boolean
+  isVerified: Boolean
+  hasAnimals: Boolean
+}
+
+input CreateZoneInput {
+  name: String!
+  description: String
+  latitude: Float!
+  longitude: Float!
+  radius: Float!
+  isUnderPremises: Boolean
+  populationDensity: Float
+}
+
+input UpdateZoneInput {
+  name: String
+  description: String
+  latitude: Float
+  longitude: Float
+  radius: Float
+  isUnderPremises: Boolean
+  populationDensity: Float
+}
+
+input CreateAlertInput {
+  userId: ID!
+  zoneId: ID!
+  description: String
+  isActive: Boolean
+  alertQuarter: Quarter
+}
+
+input UpdateAlertInput {
+  description: String
+  isActive: Boolean
+  alertQuarter: Quarter
+}
+
+input CreateIncidentInput {
+  zoneId: ID!
+  description: String
+  severity: Int
+  isValidatedByAuthority: Boolean
+  type: IncidentType
+}
+
+input UpdateIncidentInput {
+  description: String
+  severity: Int
+  isValidatedByAuthority: Boolean
+  type: IncidentType
+}
+
+input CreateCommunityReportInput {
+  userId: ID!
+  zoneId: ID!
+  description: String
+}
+
+input UpdateCommunityReportInput {
+  description: String
+}
